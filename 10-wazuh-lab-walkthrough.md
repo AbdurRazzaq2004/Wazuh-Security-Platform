@@ -1,1011 +1,514 @@
-# 🧪 Wazuh Lab Walkthrough — Complete Hands-On Guide
+# 🧪 Wazuh Lab Walkthrough
 
-> **Lab Environment:** Wazuh 4.14.3 All-in-One (Single Node) deployed on AWS EC2 (Ubuntu 24.04.3 LTS)
+> **Environment:** Wazuh 4.14.3 All-in-One · AWS EC2 · Ubuntu 24.04.3 LTS · Region `us-east-1`
 >
-> **Cloud Provider:** AWS — 2 × EC2 instances in `us-east-1` (N. Virginia): 1 Wazuh Server + 1 Agent
+> **Setup:** 2 EC2 instances — 1 Wazuh Server (Manager + Indexer + Dashboard) + 1 Agent
 >
-> **Purpose:** Install Wazuh, enroll agents, and explore every section of the Wazuh Dashboard.
+> **Goal:** Install Wazuh, enroll agents, and explore every Dashboard module.
 
 ---
 
-## 📌 What This Lab Covers
+## Lab Overview
 
-1. SSH into an AWS EC2 Ubuntu instance
-2. Install Wazuh using the quickstart script
-3. Access the Wazuh Dashboard for the first time
-4. Explore all Dashboard modules (Endpoint Security, IT Hygiene, MITRE ATT&CK, etc.)
-5. Open AWS Security Group to allow agent communication (port 1514/1515)
-6. Deploy a second EC2 instance and enroll it as a Wazuh Agent
-7. Explore Vulnerability Detection, Configuration Assessment (SCA), and more
+| Phase | Steps | What We Do |
+|:---:|:---:|:---|
+| **1** | 1–4 | Install Wazuh & explore the empty Dashboard |
+| **2** | 5–6 | Discover tab & Threat Hunting |
+| **3** | 7–13 | Deploy first agent & verify enrollment |
+| **4** | 14–16 | Deploy second agent |
+| **5** | 17–28 | Explore all security modules |
 
 ---
 
-## Step 1 — SSH into the Ubuntu EC2 Instance
+## Phase 1 — Installation & First Look
 
-![SSH into Ubuntu Server](./images/1.png)
+### Step 1 · SSH into the EC2 Instance
 
-### What's Happening Here
+![Step 1](./images/1.png)
 
-We are **SSH-ing into our AWS EC2 Ubuntu instance** for the first time. This is the server where we will install Wazuh (all-in-one deployment).
-
-You can see the typical Ubuntu SSH welcome message:
-
-- `Enable ESM Apps to receive additional future security updates`
-- `Ubuntu comes with ABSOLUTELY NO WARRANTY`
-- System info like uptime, packages, etc.
-
-### Why This Step
-
-Before installing anything, we need terminal access to the server. We used:
+We SSH into our Ubuntu EC2 instance — this is where Wazuh will be installed.
 
 ```bash
 ssh -i "your-key.pem" ubuntu@<ec2-public-ip>
 ```
 
-This is our **Wazuh Server** — it will run the Wazuh Manager, Indexer, and Dashboard (all-in-one single node).
+The terminal shows the standard Ubuntu welcome: ESM update notice, warranty disclaimer, and system stats.
 
 ---
 
-## Step 2 — Running the Wazuh Installation Script
+### Step 2 · Running the Wazuh Install Script
 
-![Wazuh Installation Script Running](./images/2.png)
+![Step 2](./images/2.png)
 
-### What's Happening Here
-
-We are running the **Wazuh quickstart installation script**. The terminal shows the installation progress:
-
-- `INFO: --- Dependencies ---` — Installing required packages (`apt-transport-https`, `debhelper`)
-- `INFO: Wazuh repository added` — Wazuh package repo is now configured
-- `INFO: --- Configuration files ---` — Generating config files
-- `INFO: Generating the root certificate` — Creating TLS/SSL certificates
-- `INFO: Generating Admin certificates` — Admin certs for dashboard access
-- `INFO: Generating Wazuh indexer certificates` — Certs for indexer communication
-- `INFO: Generating Wazuh dashboard certificates` — Dashboard certs
-
-### Commands Used
+We run the **all-in-one quickstart** installer:
 
 ```bash
 curl -sO https://packages.wazuh.com/4.x/wazuh-install.sh
 sudo bash ./wazuh-install.sh -a
 ```
 
-The `-a` flag means **all-in-one** — it installs the Wazuh Manager, Indexer, and Dashboard on the same machine.
+The terminal shows progress — installing dependencies, adding the Wazuh repo, generating TLS certificates (root, admin, indexer, dashboard). The `-a` flag installs all three components on one machine:
 
-### What Gets Installed
+| Component | Role |
+|:---|:---|
+| **Wazuh Manager** | Receives & analyzes agent events |
+| **Wazuh Indexer** | Stores alerts as searchable documents |
+| **Wazuh Dashboard** | Web UI on port 443 |
 
-| Component | What It Does |
-|---|---|
-| **Wazuh Manager** | Receives and analyzes events from agents |
-| **Wazuh Indexer** | Stores alerts as searchable JSON documents |
-| **Wazuh Dashboard** | Web UI for visualization (port 443) |
-
-> ⚠️ After installation completes, it prints the **admin password**. Save it — you need it to log in!
+> ⚠️ The installer prints an **admin password** at the end — save it!
 
 ---
 
-## Step 3 — Wazuh Dashboard: First Login (No Agents Yet)
+### Step 3 · Dashboard First Login — No Agents
 
-![Wazuh Dashboard Overview — No Agents](./images/3.png)
+![Step 3](./images/3.png)
 
-### What's Happening Here
+We open `https://<ip>:443` and log in. The Overview page shows **0 agents registered** — all modules (Configuration Assessment, Malware Detection, FIM) are listed but empty.
 
-We've opened the Wazuh Dashboard in the browser at `https://<ec2-public-ip>:443` and logged in with the admin credentials.
-
-This is the **Overview page** — but notice the message:
-
-> **"This instance has no agents registered. Please deploy agents to begin monitoring your endpoints."**
-
-### What We See
-
-| Element | Status |
-|---|---|
-| **Agents Summary** | 0 agents — none registered yet |
-| **Critical severity** | Rule level 15 or higher — no events yet |
-| **Endpoint Security modules** | Listed but empty (no data without agents) |
-
-### Modules Visible (But Empty)
-
-- **Configuration Assessment** — Scan your assets as part of a configuration assessment audit
-- **Malware Detection** — Check indicators of compromise triggered by malware infections or cyberattacks
-- **File Integrity Monitoring** — Alerts related to file changes, including permissions, content, ownership, and attributes
-
-### Why It's Empty
-
-The Wazuh Dashboard shows data **only from enrolled agents**. Since we just installed the server and haven't deployed any agents yet, everything is at zero. This is expected.
+This is expected: Wazuh only shows data from enrolled agents.
 
 ---
 
-## Step 4 — Dashboard Modules Overview (Sidebar)
+### Step 4 · Dashboard Sidebar — All Modules
 
-![Dashboard Modules — Endpoint Security & Security Operations](./images/4.png)
+![Step 4](./images/4.png)
 
-### What's Happening Here
+The left sidebar lists every available module:
 
-We're exploring the **left sidebar / modules panel** of the Wazuh Dashboard. This shows all available security modules organized by category:
+| Category | Modules |
+|:---|:---|
+| **Endpoint Security** | Configuration Assessment · FIM · Malware Detection |
+| **Security Operations** | IT Hygiene · GDPR · NIST 800-53 · PCI DSS · HIPAA · TSC |
+| **Threat Intelligence** | Threat Hunting · MITRE ATT&CK · Vulnerability Detection |
 
-**Endpoint Security:**
-
-| Module | Description |
-|---|---|
-| **Configuration Assessment** | Scan your assets as part of a configuration assessment audit (CIS benchmarks) |
-| **File Integrity Monitoring** | Alerts related to file changes — permissions, content, ownership, and attributes |
-| **Malware Detection** | Check indicators of compromise triggered by malware infections or cyberattacks |
-
-**Security Operations:**
-
-| Module | Description |
-|---|---|
-| **IT Hygiene** | Assess system, software, processes, and network layers |
-| **GDPR** | General Data Protection Regulation — processing of personal data |
-| **NIST 800-53** | US federal security controls framework |
-| And more... | PCI DSS, HIPAA, TSC compliance modules |
-
-> 💡 These modules will remain empty until we deploy agents and enable the corresponding sections in `ossec.conf`.
+> These stay empty until agents are deployed and `ossec.conf` modules are enabled.
 
 ---
 
-## Step 5 — Discover Tab: Wazuh Alerts Index Pattern
+## Phase 2 — Initial Dashboard Exploration
 
-![Discover Tab — wazuh-alerts index](./images/5.png)
+### Step 5 · Discover Tab — Raw Alert Data
 
-### What's Happening Here
+![Step 5](./images/5.png)
 
-We're in the **Discover** tab (similar to OpenSearch/Kibana Discover). This is the raw data explorer.
+The **Discover** tab is the raw data explorer (like Kibana). We see:
 
-### Key Elements Visible
+- **Index patterns:** `wazuh-alerts-*` · `wazuh-monitoring-*` · `wazuh-statistics-*`
+- **404 hits** in the last 24 hours
+- **DQL search bar** for filtering alerts by any field
+- Available fields: `index`, `agent.id`, `data.command`, etc.
 
-| Element | What It Shows |
-|---|---|
-| **Index patterns** | `wazuh-alerts-*`, `wazuh-monitoring-*`, `wazuh-statistics-*` |
-| **Search bar** | DQL (Dashboard Query Language) for searching alerts |
-| **Time range** | `Last 24 hours` with date picker |
-| **Hits** | `404 hits` — total matching documents in this time window |
-| **Available fields** | Fields like `index`, `agent.id`, `data.command` that you can add as columns |
-
-### What Are These Index Patterns?
-
-| Index Pattern | What It Stores |
-|---|---|
-| `wazuh-alerts-*` | All security alerts generated by rules |
-| `wazuh-monitoring-*` | Agent connection/status monitoring data |
-| `wazuh-statistics-*` | Performance and statistics data |
-
-This is where SOC analysts do their **raw investigation** — searching through alerts, filtering by fields, and exporting data.
+This is where SOC analysts do deep-dive investigations.
 
 ---
 
-## Step 6 — Threat Hunting: Authentication Failure Events
+### Step 6 · Threat Hunting — Auth Failures
 
-![Threat Hunting — Authentication Failures](./images/6.png)
+![Step 6](./images/6.png)
 
-### What's Happening Here
+The **Threat Hunting** module filtered to `Authentication failure` shows **78 failed login events** against manager `ip-172-31-28-40`.
 
-We're in the **Threat Hunting** module, filtered to show **Authentication failure** events.
+Why this matters:
+- **Brute force** — repeated password guessing
+- **Misconfig** — wrong creds in automation
+- **Recon** — unauthorized access attempts
 
-### Key Elements Visible
-
-| Element | What It Shows |
-|---|---|
-| **Module** | Threat Hunting |
-| **Filter applied** | `Authentication failure` |
-| **Manager name** | `ip-172-31-28-40` (our Wazuh server) |
-| **Time range** | Last 24 hours |
-| **Dashboard + Events tabs** | Dashboard shows charts, Events shows raw logs |
-| **Hits** | 78 authentication failure events detected |
-| **Columns** | Timestamp, agent.name, rule.description, rule.level, rule.id |
-
-### Why Authentication Failures Matter
-
-These events indicate someone (or something) tried to log in and **failed**. This could mean:
-
-- **Brute force attacks** — someone trying many passwords
-- **Misconfigured services** — wrong credentials in automation
-- **Unauthorized access attempts** — someone trying to break in
-
-> This is one of the most common alert types in Wazuh. In a real SOC, you'd investigate the **source IP**, check how many attempts there were, and potentially block the attacker using Active Response.
+> In a real SOC, you'd check the source IP, attempt count, and possibly trigger Active Response to block the attacker.
 
 ---
 
-## Step 7 — Deploy New Agent: OS Selection
+## Phase 3 — Agent Deployment
 
-![Deploy New Agent — Select OS](./images/7.png)
+### Step 7 · Deploy Agent Wizard — Select OS
 
-### What's Happening Here
+![Step 7](./images/7.png)
 
-We're deploying our **first Wazuh Agent**. The Dashboard provides a built-in agent deployment wizard.
+The Dashboard has a built-in **Deploy New Agent** wizard. We select:
 
-### Step 1: Select the Operating System
+- **OS:** Linux → **DEB amd64** (for Ubuntu)
+- **Server address:** `34.224.212.65` (Wazuh Manager public IP)
 
-The wizard shows three options:
-
-| OS | Package Types |
-|---|---|
-| **LINUX** | RPM (amd64), RPM (aarch64), DEB (amd64), DEB (aarch64) |
-| **WINDOWS** | MSI (32/64 bits) |
-| **macOS** | Intel, Apple Silicon |
-
-Since our second EC2 instance runs **Ubuntu (Debian-based)**, we select **LINUX → DEB amd64**.
-
-### Server Address Visible
-
-The wizard asks for a **server address** — this is the Wazuh Manager IP. We can see `34.224.212.65` entered (public IP at that point).
+Other options available: RPM (amd64/aarch64), Windows MSI, macOS (Intel/Apple Silicon).
 
 ---
 
-## Step 8 — Deploy New Agent: Server Address & Package Selection
+### Step 8 · Deploy Agent — Confirm Package
 
-![Deploy New Agent — Package Selection](./images/8.png)
+![Step 8](./images/8.png)
 
-### What's Happening Here
+Confirming the package selection — **DEB amd64** with updated server address `98.81.179.28`.
 
-Continuing the agent deployment wizard — we've selected **Linux** and now we're confirming the specific package type and server address:
-
-- **DEB amd64** — For Ubuntu, Debian ✅ (this is what we need)
-- **Server address:** `98.81.179.28` (the Wazuh Manager's public IP)
-
-### Why the IP Changed
-
-In Step 7, the IP was `34.224.212.65`, and now it's `98.81.179.28`. This happens when you **stop and restart** an EC2 instance — AWS assigns a new public IP (unless you use an Elastic IP).
+> The IP changed from Step 7 because stopping/starting an EC2 instance reassigns its public IP (use an Elastic IP to keep it static).
 
 ---
 
-## Step 9 — Deploy New Agent: Installation Command
+### Step 9 · Deploy Agent — Install Command
 
-![Deploy New Agent — Install Command](./images/9.png)
+![Step 9](./images/9.png)
 
-### What's Happening Here
-
-The wizard generates the **exact command** to run on the agent machine:
+The wizard generates the exact install command:
 
 ```bash
-wget https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.14.3-1_amd64.deb && \
-sudo WAZUH_MANAGER='98.81.179.28' \
-     WAZUH_AGENT_GROUP='default' \
-     WAZUH_AGENT_NAME='ubuntu' \
+wget https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.14.3-1_amd64.deb
+sudo WAZUH_MANAGER='98.81.179.28' WAZUH_AGENT_GROUP='default' WAZUH_AGENT_NAME='ubuntu' \
      dpkg -i ./wazuh-agent_4.14.3-1_amd64.deb
 ```
 
-### Breaking Down the Command
+| Parameter | Value |
+|:---|:---|
+| `WAZUH_MANAGER` | `98.81.179.28` — Server IP |
+| `WAZUH_AGENT_GROUP` | `default` |
+| `WAZUH_AGENT_NAME` | `ubuntu` |
 
-| Part | What It Does |
-|---|---|
-| `wget ...wazuh-agent_4.14.3-1_amd64.deb` | Downloads the Wazuh Agent package |
-| `WAZUH_MANAGER='98.81.179.28'` | Sets the Wazuh Server IP (our EC2 public IP) |
-| `WAZUH_AGENT_GROUP='default'` | Assigns the agent to the `default` group |
-| `WAZUH_AGENT_NAME='ubuntu'` | Names this agent "ubuntu" |
-| `dpkg -i ./wazuh-agent...deb` | Installs the downloaded package |
-
-### Configuration Visible
-
-- **Group selected:** `default`
-- **Requirements note:** Administrator privileges needed, Bash shell required
-
-> ⚠️ **Important:** For the agent to connect, port **1514** and **1515** must be open on the Wazuh Server's Security Group. That's what we do next!
+> ⚠️ Ports **1514** (data) and **1515** (enrollment) must be open on the server's Security Group first!
 
 ---
 
-## Step 10 — AWS Security Group: Inbound Rules
+### Step 10 · AWS Security Group — Open Ports
 
-![AWS EC2 Security Group — Inbound Rules](./images/10.png)
+![Step 10](./images/10.png)
 
-### What's Happening Here
+The AWS **Security Group** (`sg-0409dfe0b07ea77dd`) for our Wazuh server with **6 inbound rules**:
 
-We're in the **AWS EC2 Console → Security Groups** section. This is the firewall configuration for our Wazuh Server EC2 instance.
+| Port | Purpose |
+|:---|:---|
+| **22** | SSH access |
+| **443** | Dashboard (HTTPS) |
+| **1514** | Agent data transmission |
+| **1515** | Agent enrollment |
 
-### Security Group Details
+> This is the **#1 deployment issue** on AWS. Without these ports open, agents get "Connection refused."
+
+---
+
+### Step 11 · AWS EC2 — Two Instances Running
+
+![Step 11](./images/11.png)
+
+The EC2 dashboard shows **2 running instances**:
+
+| Instance | Type | Role |
+|:---|:---|:---|
+| **wazuh** | `t2.medium` | Server (Manager + Indexer + Dashboard) |
+| **Instance 2** | — | Agent endpoint |
+
+Both in `us-east-1`, status checks passing (`2/2`).
+
+---
+
+### Step 12 · First Agent Enrolled
+
+![Step 12](./images/12.png)
+
+Back in Wazuh — the **Endpoints** page now shows **1 active agent**:
 
 | Field | Value |
-|---|---|
-| **Security Group Name** | `launch-wizard-1` |
-| **Security Group ID** | `sg-0409dfe0b07ea77dd` |
-| **VPC ID** | `vpc-0f92627c7e7f23e9c` |
-| **Inbound Rules Count** | 6 permission entries |
-| **Outbound Rules Count** | 1 permission entry |
-
-### Why This Is Critical
-
-For the Wazuh Agent to connect to the Wazuh Server, the following ports **must be open** in the inbound rules:
-
-| Port | Protocol | Purpose |
-|---|---|---|
-| **1514** | TCP | Agent event data transmission |
-| **1515** | TCP | Agent enrollment/registration |
-| **443** | TCP | Dashboard web access (HTTPS) |
-| **22** | TCP | SSH access |
-
-> If you skip this step, the agent will fail to connect with a "Connection refused" error. This is the **#1 most common issue** when deploying agents on AWS.
-
----
-
-## Step 11 — AWS EC2: Two Instances Running
-
-![AWS EC2 Instances — 2 Instances Running](./images/11.png)
-
-### What's Happening Here
-
-We're in the **AWS EC2 Instances** dashboard. We can see **2 instances** running:
-
-| Instance | Role |
-|---|---|
-| **Instance 1 (wazuh)** | Wazuh Server (Manager + Indexer + Dashboard) — `t2.medium` |
-| **Instance 2** | Wazuh Agent (the endpoint we're monitoring) |
-
-### Columns Visible
-
-| Column | What It Shows |
-|---|---|
-| **Name** | Instance name tag (`wazuh`) |
-| **Instance State** | Running ✅ |
-| **Instance Type** | `t2.medium` |
-| **Status Check** | `2/2 checks passed` |
-| **Availability Zone** | `us-east-1` (N. Virginia) |
-| **Public IPv4 DNS** | Public address to connect |
-
-> 💡 This is our lab setup: **2 EC2 instances** in the same VPC. One runs Wazuh all-in-one, the other runs the Wazuh Agent.
-
----
-
-## Step 12 — Wazuh Dashboard: First Agent Enrolled
-
-![Wazuh Agents — 1 Agent Active](./images/12.png)
-
-### What's Happening Here
-
-Back in the Wazuh Dashboard → **Endpoints** section. Now we can see our **first agent has enrolled successfully!**
-
-### Agent Details
-
-| Field | Value |
-|---|---|
-| **Agent ID** | `001` |
+|:---|:---|
+| **ID** | `001` |
 | **Name** | `ip-172-31-27-237` |
 | **Status** | 🟢 Active |
-| **IP Address** | `172.31.27.237` |
-| **Group** | `default` |
-| **Operating System** | Ubuntu 24.04.3 LTS |
-| **Cluster Node** | `node01` |
-| **Version** | `v4.14.3` |
+| **OS** | Ubuntu 24.04.3 LTS |
+| **Version** | v4.14.3 |
+| **Node** | node01 |
 
-### Agents by Status
-
-| Status | Count |
-|---|---|
-| 🟢 Active | 1 |
-| 🔴 Disconnected | 0 |
-| ⚫ Never Connected | 0 |
-
-### What Changed
-
-Earlier in Step 3, the dashboard said "No agents registered." Now after:
-
-1. Opening the Security Group ports (Step 10)
-2. Running the install command on the second EC2 (Step 9)
-3. Starting the agent service (`sudo systemctl start wazuh-agent`)
-
-...the agent connected and appears as **Active** ✅
+Compare to Step 3: the dashboard was empty. Now with an agent enrolled, data starts flowing.
 
 ---
 
-## Step 13 — Individual Agent Dashboard
+### Step 13 · Individual Agent Details
 
-![Agent Details — ip-172-31-27-237](./images/13.png)
+![Step 13](./images/13.png)
 
-### What's Happening Here
+Clicking on Agent 001 opens its dedicated dashboard:
 
-We clicked on agent `001` to view its **individual dashboard**. This shows everything about this specific endpoint.
-
-### Agent Information
-
-| Field | Value |
-|---|---|
-| **ID** | 001 |
-| **Status** | 🟢 Active |
-| **IP Address** | 172.31.27.237 |
-| **Version** | Wazuh v4.14.3 |
-| **Group** | default |
-| **Operating System** | Ubuntu 24.04.3 LTS |
-| **Cluster Node** | node01 |
-| **Registration Date** | Feb 20, 2026 @ 11:10:20 |
-| **Last Keep Alive** | Feb 20, 2026 @ 11:18:20 |
-
-### System Inventory (Visible)
-
-| Field | Value |
-|---|---|
-| **Cores** | 2 |
+| Detail | Value |
+|:---|:---|
+| **IP** | 172.31.27.237 |
+| **Registered** | Feb 20, 2026 @ 11:10:20 |
+| **Last Alive** | Feb 20, 2026 @ 11:18:20 |
+| **CPU** | Intel Xeon · 2 cores |
 | **Memory** | 3.868 GB |
-| **CPU** | Intel(R) Xeon(R) |
 
-### Available Tabs for This Agent
-
-| Tab | What It Shows |
-|---|---|
-| **Threat Hunting** | Security alerts for this agent |
-| **File Integrity Monitoring** | File change events on this agent |
-| **Configuration Assessment** | SCA/CIS benchmark results |
-| **MITRE ATT&CK** | ATT&CK technique mappings |
-| **Vulnerability Detection** | CVEs found on this agent |
-| **Stats** | Agent performance statistics |
-| **Configuration** | Current agent configuration |
+**Available tabs:** Threat Hunting · FIM · SCA · MITRE ATT&CK · Vulnerability Detection · Stats · Configuration
 
 ---
 
-## Step 14 — AWS EC2: Managing Instances
+## Phase 4 — Second Agent Deployment
 
-![AWS EC2 — Instances Dashboard Sidebar](./images/14.png)
+### Step 14 · AWS EC2 Console — Managing Instances
 
-### What's Happening Here
+![Step 14](./images/14.png)
 
-We're back in the **AWS EC2 Console**, viewing the EC2 sidebar navigation and instances list. This shows the full range of AWS EC2 management sections.
-
-### EC2 Sidebar Sections Visible
-
-| Section | Purpose |
-|---|---|
-| **Dashboard** | EC2 overview |
-| **Instances** | Running instances |
-| **Instance Types** | Available machine types |
-| **Launch Templates** | Saved instance configurations |
-| **Spot Requests** | Spot instance management |
-| **Savings Plans** | Cost optimization |
-| **Reserved Instances** | Long-term reservations |
-| **Dedicated Hosts** | Dedicated hardware |
-| **Capacity Reservations** | Reserved capacity |
-| **AMIs / AMI Catalog** | Machine images |
-| **Volumes / Snapshots** | EBS storage management |
-| **Security Groups** | Firewall rules |
-| **Elastic IPs** | Static public IPs |
-| **Key Pairs** | SSH key management |
-
-> We're preparing to launch/manage the second EC2 instance for the second Wazuh Agent.
+Back in the AWS console. The EC2 sidebar shows all management sections: Instances, AMIs, Volumes, Snapshots, Security Groups, Elastic IPs, Key Pairs, etc. We're preparing the second EC2 instance for Agent 002.
 
 ---
 
-## Step 15 — Wazuh Dashboard: Two Agents Enrolled
+### Step 15 · Two Agents Enrolled
 
-![Wazuh Agents — 2 Agents](./images/15.png)
+![Step 15](./images/15.png)
 
-### What's Happening Here
+Now **2 agents** are enrolled:
 
-Now we have **2 agents** enrolled in Wazuh:
+| Agent | Name | Status |
+|:---|:---|:---|
+| 001 | `ip-172-31-27-237` | 🟢 Active |
+| 002 | `test-server2` | ⚫ Never Connected |
 
-| Agent ID | Name | Status |
-|---|---|---|
-| **001** | `ip-172-31-27-237` | 🟢 Active |
-| **002** | `test-server2` | ⚫ Never Connected |
-
-### Agents by Status
-
-| Status | Count |
-|---|---|
-| 🟢 Active | 1 |
-| ⚫ Never Connected | 1 |
-
-### Top 5 OS / Groups
-
-- **OS:** `ubuntu` (1 agent reporting)
-- **Groups:** `default` (2 agents assigned)
-
-> Agent 002 (`test-server2`) has been enrolled but hasn't established its first connection yet (status: **Never Connected**). Once we start the agent service on that machine, it will switch to Active.
+Agent 002 is registered but hasn't started its service yet.
 
 ---
 
-## Step 16 — Agents Detailed List View
+### Step 16 · Both Agents Active
 
-![Agents Detailed List — Both Active](./images/16.png)
+![Step 16](./images/16.png)
 
-### What's Happening Here
-
-The **expanded agents table** showing full details for both agents — now **both are active**:
+After starting the agent service on the second machine, **both are now active**:
 
 | Field | Agent 001 | Agent 002 |
-|---|---|---|
+|:---|:---|:---|
 | **Name** | ip-172-31-27-237 | test-server2 |
-| **IP Address** | 172.31.27.237 | 172.31.25.172 |
-| **Group** | default | default |
+| **IP** | 172.31.27.237 | 172.31.25.172 |
 | **OS** | Ubuntu 24.04.3 LTS | Ubuntu 24.04.3 LTS |
-| **Cluster Node** | node01 | node01 |
 | **Version** | v4.14.3 | v4.14.3 |
 | **Status** | 🟢 Active | 🟢 Active |
 
-### Key Takeaway
+---
 
-Both agents are:
-- Same OS (Ubuntu 24.04.3 LTS)
-- Same Wazuh version (v4.14.3)
-- In the same group (`default`)
-- Both reporting to the same cluster node (`node01`)
-- Both have action buttons for management (restart, upgrade, etc.)
+## Phase 5 — Security Module Exploration
+
+### Step 17 · Configuration Assessment (SCA) — Events
+
+![Step 17](./images/17.png)
+
+The **SCA Events** tab for `test-server2` — filtered by `rule.groups: sca` and `agent.id: 002`. Shows **280 SCA events** with columns: timestamp, check title, config file evaluated.
+
+SCA automatically runs CIS benchmark scans when an agent enrolls.
 
 ---
 
-## Step 17 — Configuration Assessment (SCA) Dashboard
+### Step 18 · Overview — 2 Active Agents
 
-![Configuration Assessment — test-server2](./images/17.png)
+![Step 18](./images/18.png)
 
-### What's Happening Here
+The **Overview** page now populated — **2 active agents**, and all modules show data:
 
-We're in the **Configuration Assessment (SCA)** module for `test-server2`. This module runs **CIS benchmark scans** to check if the system is configured securely.
+- Configuration Assessment ✅
+- File Integrity Monitoring ✅
+- Malware Detection ✅
+- IT Hygiene ✅
+- GDPR ✅
 
-### What We See
-
-| Element | Description |
-|---|---|
-| **Dashboard tab** | Overview charts and metrics |
-| **Inventory tab** | Detailed check-by-check results |
-| **Events tab** | Raw SCA events ← We're here |
-| **Filter** | `manager.name: ip-172-31-17-228` and `rule.groups: sca` and `agent.id: 002` |
-| **Time range** | Last 24 hours |
-| **Hits** | 280 SCA events |
-
-### Columns Visible
-
-- **Timestamp** — When the SCA check ran
-- **data.sca.check.title** — What's being checked
-- **data.sca.check.file** — Config file being evaluated
-
-> SCA scans run automatically when the agent is enrolled. It checks the system against CIS benchmarks and reports which checks **passed**, **failed**, or are **not applicable**.
+> Compare to Step 3 — the dashboard was empty. Agents make everything come alive.
 
 ---
 
-## Step 18 — Dashboard Overview with 2 Active Agents
+### Step 19 · IT Hygiene — Platforms
 
-![Wazuh Overview — 2 Active Agents](./images/18.png)
+![Step 19](./images/19.png)
 
-### What's Happening Here
+The **IT Hygiene** module shows a full system inventory. Under the **Platform** tab:
 
-Back to the **Overview** page. Now the dashboard has data because we have **2 active agents**:
+- **Both agents** run `Ubuntu 24.04.3 LTS (Noble Numbat)`
+- **Kernel:** `6.14.0-1018-aws`
+- **Tabs available:** Dashboard · OS/Hardware · Platform · Software · Processes · Network · Identity · Services
 
-### Agents Summary
-
-| Status | Count |
-|---|---|
-| 🟢 Active | 2 |
-| 🔴 Disconnected | 0 |
-
-### Modules Listed
-
-Now the Endpoint Security and Security Operations modules are visible and contain data:
-
-- **Configuration Assessment** — SCA scan results available
-- **File Integrity Monitoring** — File change events being collected
-- **Malware Detection** — Rootcheck running
-- **IT Hygiene** — System inventory collecting
-- **GDPR** — Compliance mappings active
-
-> Compare this to Step 3 — the dashboard was empty. Now with 2 agents sending data, all modules are populated.
+> Powered by `<syscollector>` in `ossec.conf`.
 
 ---
 
-## Step 19 — IT Hygiene: System Dashboard
+### Step 20 · IT Hygiene — Network
 
-![IT Hygiene — Dashboard, Platforms](./images/19.png)
+![Step 20](./images/20.png)
 
-### What's Happening Here
+The **Network** tab shows connection data across all agents. Top destination ports:
 
-We're exploring the **IT Hygiene** module (System Inventory). This shows the state of all monitored endpoints.
+| Port | Service |
+|:---|:---|
+| **443** | Wazuh Dashboard (HTTPS) |
+| **1514** | Agent → Manager communication |
+| **80** | HTTP |
 
-### Tabs Available
-
-| Tab | What It Shows |
-|---|---|
-| **Dashboard** | Overview with charts |
-| **OS / Hardware** | Operating system and hardware info |
-| **Platform** | Platform distribution ← We're here |
-| **System** | System-level details |
-| **Software** | Installed packages |
-| **Processes** | Running processes |
-| **Network** | Network interfaces and connections |
-| **Identity** | User/group information |
-| **Services** | Running services |
-
-### What We See
-
-| Element | Value |
-|---|---|
-| **Cluster** | `ip-172-31-17-228` |
-| **Top 5 Platforms** | `ubuntu` (both agents run Ubuntu) |
-| **Agents listed** | `ip-172-31-27-237` and `test-server2` |
-| **OS Details** | Ubuntu 24.04.3 LTS (Noble Numbat), Kernel 6.14.0-1018-aws |
-
-> This data is collected by the `<syscollector>` module in `ossec.conf`. It inventories all software, hardware, network, and processes on each agent.
+Both agents (`172.31.27.237` and `172.31.25.172`) show active connections — confirming proper communication.
 
 ---
 
-## Step 20 — IT Hygiene: Network Tab
+### Step 21 · IT Hygiene — Services
 
-![IT Hygiene — Network (Ports & Destinations)](./images/20.png)
+![Step 21](./images/21.png)
 
-### What's Happening Here
+The **Services** tab discovered **179 unique services** (356 total entries) across both agents. Examples: `apport`, `ModemManager`, `networking`, `ldconfig`, `systemd-tpm2-setup-early`.
 
-We're in the **IT Hygiene → Network** tab. This shows network-related inventory data.
-
-### Tabs in Network Section
-
-`Addresses` → `Interfaces` → `Protocols` → `Listeners` → `Traffic`
-
-### What We See
-
-| Element | Details |
-|---|---|
-| **Filter** | `NOT destination_port:0` (filtering out port 0 noise) |
-| **Top 5 Destination Ports** | **443** (HTTPS), **1514** (Wazuh agent comm), **80** (HTTP), **34007** |
-
-### Why Ports 443 and 1514?
-
-| Port | Why It Appears |
-|---|---|
-| **443** | Agents/browsers connecting to the Wazuh Dashboard |
-| **1514** | Agents sending event data to the Wazuh Manager |
-
-### Agent Network Data
-
-- `test-server2` at `172.31.25.172` — multiple connections visible
-- `ip-172-31-27-237` at `172.31.27.237` — connections to various ports
-
-These are the two most critical ports in a Wazuh deployment. Seeing them here confirms the agents are communicating properly.
+Unexpected services could indicate a backdoor or unauthorized software — critical for compliance audits.
 
 ---
 
-## Step 21 — IT Hygiene: Services Tab
+### Step 22 · MITRE ATT&CK — Dashboard
 
-![IT Hygiene — Services](./images/21.png)
+![Step 22](./images/22.png)
 
-### What's Happening Here
+The **MITRE ATT&CK** module maps every Wazuh alert to the ATT&CK framework. Top tactics detected:
 
-We're in the **IT Hygiene → Services** tab. This shows all running services discovered on the monitored agents.
+| Tactic | Meaning |
+|:---|:---|
+| Valid Accounts | Legitimate credential abuse |
+| Defense Evasion | Avoiding detection |
+| Privilege Escalation | Gaining higher access (sudo) |
+| Persistence | Maintaining access |
+| Initial Access | First entry point |
 
-### What We See
+Additional views: attacks by technique, top tactics per agent, MITRE techniques per agent.
 
-| Element | Details |
-|---|---|
-| **Filter** | `wazuh.cluster.name: ip-172-31-17-228` |
-| **Top 5 Services** | `apport` and others |
-| **Total Unique Services** | 179 services discovered |
-| **Total Hits** | 356 service entries |
-
-### Services Visible
-
-- `ModemManager` — Network modem management
-- `systemd-tpm2-setup-early` — TPM security setup
-- `networking` — Network configuration
-- `ldconfig` — Library cache management
-
-### Why This Matters
-
-- **Unexpected services** = potential security risk (backdoor, unauthorized software)
-- **Missing services** = something critical might not be running
-- Useful for **compliance audits** — verify only approved services are running
+> This turns isolated alerts into a **coherent attack narrative**.
 
 ---
 
-## Step 22 — MITRE ATT&CK: Dashboard
+### Step 23 · MITRE ATT&CK — Intelligence
 
-![MITRE ATT&CK — Dashboard & Tactics](./images/22.png)
+![Step 23](./images/23.png)
 
-### What's Happening Here
+The **Intelligence** tab is a built-in threat encyclopedia — **150+ threat actor groups** with their techniques, tools, and mitigations:
 
-We're in the **MITRE ATT&CK** module — **Dashboard** tab. This maps Wazuh alerts to the MITRE ATT&CK framework.
+| Group ID | Name | Origin |
+|:---|:---|:---|
+| G0018 | admin@338 | China |
+| G0130 | Ajax Security Team | Iran |
+| G0138 | Andariel | North Korea (Lazarus sub-group) |
+| G1007 | Aoqin Dragon | China |
 
-### What We See
-
-| Element | Description |
-|---|---|
-| **Alerts evolution over time** | Timeline chart showing ATT&CK-tagged alerts |
-| **Top tactics** | Valid Accounts, Defense Evasion, Privilege Escalation, Persistence, Initial Access |
-| **Filter** | `manager.name: ip-172-31-17-228` and `rule.mitre.id: exists` |
-| **Time range** | Last 24 hours |
-
-### Top Tactics Detected
-
-| Tactic | What It Means |
-|---|---|
-| **Valid Accounts** | Attackers using legitimate credentials |
-| **Defense Evasion** | Techniques to avoid detection |
-| **Sudo and Sudo Caching** | Privilege escalation via sudo |
-| **Create Account** | New accounts being created |
-| **Disable or Modify Tools** | Security tools being tampered with |
-| **Persistence** | Maintaining access after initial compromise |
-| **Privilege Escalation** | Gaining higher-level permissions |
-| **Initial Access** | First entry point into the system |
-
-### Additional Sections
-
-- **Attacks by technique** — detailed technique breakdown
-- **Top tactics by agent** — which agents trigger which tactics
-- **MITRE techniques by agent** — per-agent technique mapping
-
-> Every Wazuh rule can be mapped to MITRE ATT&CK tactics and techniques. This turns isolated alerts into a **coherent attack narrative**.
+Also available: Mitigations, Software, Tactics, and Techniques databases.
 
 ---
 
-## Step 23 — MITRE ATT&CK: Intelligence Tab
+### Step 24 · MITRE ATT&CK — Events
 
-![MITRE ATT&CK — Intelligence (Groups, Mitigations, Software)](./images/23.png)
+![Step 24](./images/24.png)
 
-### What's Happening Here
-
-We're exploring the **MITRE ATT&CK → Intelligence** tab. This is a built-in reference database of threat intelligence.
-
-### Sections Available
-
-| Section | What It Contains |
-|---|---|
-| **Groups** | 150+ known threat actor groups |
-| **Mitigations** | Recommended countermeasures for each technique |
-| **Software** | Known malware and tools used by threat actors |
-| **Tactics** | The 14 ATT&CK tactic categories |
-| **Techniques** | Specific attack techniques with descriptions |
-
-### Groups Visible (150 threat actor groups)
-
-| Group ID | Name | Description |
-|---|---|---|
-| G0018 | admin@338 | China-based cyber threat group targeting financial/economic orgs |
-| G0130 | Ajax Security Team | Iranian threat group |
-| G0138 | Andariel | North Korean sub-group of Lazarus |
-| G1007 | Aoqin Dragon | Chinese-linked espionage group |
-
-### Why This Is Useful
-
-You can **search for any threat group** and see:
-- What techniques they use
-- What software/malware they deploy
-- What mitigations defend against them
-
-> This is built into Wazuh — no extra tools needed. It's like having a MITRE ATT&CK encyclopedia inside your SIEM.
+The **Events** tab shows raw alerts tagged with MITRE technique IDs. Filtered by `rule.mitre.id: exists`, with events spanning `10:55 – 11:21 AM`. Each row can be expanded to see the full JSON: rule ID, technique, tactic, agent details, and raw log.
 
 ---
 
-## Step 24 — MITRE ATT&CK: Events Tab
+### Step 25 · Vulnerability Detection — Dashboard
 
-![MITRE ATT&CK — Events](./images/24.png)
+![Step 25](./images/25.png)
 
-### What's Happening Here
-
-We're in the **MITRE ATT&CK → Events** tab. This shows the **raw alert data** for events that matched MITRE ATT&CK rules.
-
-### What We See
-
-| Element | Description |
-|---|---|
-| **Filter** | `manager.name: ip-172-31-17-228` and `rule.mitre.id: exists` |
-| **Framework tab** | Currently viewing the events under Framework |
-| **Columns** | Timestamp, agent.name |
-| **Export** | `Export Formatted` button to download results |
-| **Timestamps** | Events from `Feb 20, 2026 @ 10:55` to `11:21` |
-
-### Agents in Events
-
-- `ip-172-31-27-237` (Agent 001)
-- `ip-172-31-17-228` (Wazuh Manager itself)
-
-Each row is an individual alert that has been tagged with a MITRE ATT&CK technique ID. You can click any row to see the full JSON with:
-- Rule ID and description
-- MITRE technique and tactic
-- Agent details
-- Raw log data
-
----
-
-## Step 25 — Vulnerability Detection: Dashboard
-
-![Vulnerability Detection — Dashboard Overview](./images/25.png)
-
-### What's Happening Here
-
-We're in the **Vulnerability Detection** module — **Dashboard** tab. This shows all known CVEs (Common Vulnerabilities and Exposures) detected on our agents.
-
-### Vulnerability Counts
+The **Vulnerability Detection** module scans agent packages against CVE databases:
 
 | Severity | Count |
-|---|---|
-| 🔴 **Critical** | 18 |
-| 🟠 **High** | 344 |
-| 🟡 **Medium** | 758 |
-| 🔵 **Low** | 134 |
-| ⚪ **Pending Evaluation** | 1,566 |
+|:---|:---:|
+| 🔴 Critical | 18 |
+| 🟠 High | 344 |
+| 🟡 Medium | 758 |
+| 🔵 Low | 134 |
+| ⚪ Pending | 1,566 |
 
-### Top Sections
+**Top findings:**
+- **Top CVE:** `CVE-2022-3219` (22 occurrences)
+- **Top package:** `linux-aws` (2,352 vulns)
+- **Top agent:** `test-server2` (1,420 vulns)
 
-| Section | What It Shows |
-|---|---|
-| **Top 5 Vulnerabilities** | `CVE-2022-3219` (22 occurrences), `CVE-2025-68972` (22), `CVE-2025-68973` |
-| **Top OS** | `Ubuntu 24.04.3 LTS (Noble Numbat)` — 2,820 vulnerabilities |
-| **Top 5 Agents** | `test-server2` — 1,420 vulnerabilities, `ip-172-31-27-237` — 1,400 |
-| **Top 5 Packages** | `linux-aws` (2,352), `glib-2.0` (20) |
-
-### How It Works
-
-1. The `<syscollector>` module inventories all installed packages
-2. The `<vulnerability-detection>` module cross-references package versions against CVE databases
-3. Results appear here with severity ratings
-
-> This is powered by `<vulnerability-detection><enabled>yes</enabled></vulnerability-detection>` in `ossec.conf`.
+> Powered by `<vulnerability-detection>` + `<syscollector>` in `ossec.conf`.
 
 ---
 
-## Step 26 — Vulnerability Detection: Events (Filtered by Agent)
+### Step 26 · Vulnerability Detection — Agent Events
 
-![Vulnerability Detection — Events for test-server2](./images/26.png)
+![Step 26](./images/26.png)
 
-### What's Happening Here
+Filtering vulnerabilities for **test-server2** specifically — **1,420 hits**. Example: `libgnutls30t64` v3.8.3 with a GnuTLS library flaw.
 
-We're in the **Vulnerability Detection → Events** tab, filtered to show vulnerabilities for **test-server2** specifically.
+Columns: Agent name · Package · Version · Description · Severity · CVE ID.
 
-### What We See
-
-| Element | Description |
-|---|---|
-| **Filter** | `agent.name: test-server2` and `Evaluated / Under evaluation` |
-| **Total hits** | 1,420 vulnerabilities on this agent |
-| **Columns** | Agent name, Package name, Package version, Vulnerability description, Severity, Vulnerability ID |
-
-### Sample Vulnerability Visible
-
-- **Package:** `libgnutls30t64` version `3.8.3-1.1ubuntu3.4`
-- **Description:** "A flaw was found in the GnuTLS library..."
-- **Agent:** `test-server2`
-
-### Why This View Matters
-
-This is where you do **per-agent vulnerability assessment**:
-- Which packages on this specific server are vulnerable?
-- What's the severity of each vulnerability?
-- What should be patched first? (Critical → High → Medium → Low)
-
-> 💡 **Pro Tip:** Filter by `vulnerability.severity: Critical` to focus on the most dangerous ones first.
+> **Tip:** Filter by `vulnerability.severity: Critical` to prioritize patching.
 
 ---
 
-## Step 27 — Configuration Assessment: CIS Benchmark Results
+### Step 27 · Configuration Assessment — CIS Benchmark
 
-![Configuration Assessment — CIS Ubuntu 24.04 Benchmark](./images/27.png)
+![Step 27](./images/27.png)
 
-### What's Happening Here
+The **SCA Inventory** for `test-server2` showing **CIS Ubuntu Linux 24.04 LTS Benchmark v1.0.0** results:
 
-We're in the **Configuration Assessment (SCA)** module for `test-server2`, viewing the **CIS Ubuntu Linux 24.04 LTS Benchmark v1.0.0** results.
+| Result | Count |
+|:---|:---:|
+| ✅ Passed | 120 |
+| ❌ Failed | 117 |
+| ⬜ N/A | 42 |
+| **Score** | **~50%** |
 
-### Scan Results
+Each failed check includes: description, rationale, remediation commands, and compliance mapping (PCI DSS, HIPAA, etc.).
 
-| Status | Count |
-|---|---|
-| ✅ **Passed** | 120 checks |
-| ❌ **Failed** | 117 checks |
-| ⬜ **Not Applicable** | 42 checks |
-
-### Compliance Score
-
-With 120 passed out of 237 applicable checks, the score is approximately **50%**.
-
-### What This Means
-
-- **120 passed** — these security configurations are correctly set
-- **117 failed** — these are **misconfigurations** that need to be fixed for hardening
-- **42 not applicable** — checks that don't apply to this system
-
-### Sample Check Visible
-
-- **ID:** 35500
-- **Title:** "Ensure mounting of cramfs filesystems is disabled"
-- **Policy:** CIS Ubuntu Linux 24.04 LTS Benchmark v1.0.0
-
-### What To Do With Failed Checks
-
-Click on any **failed check** to see:
-- **What's wrong** — description of the misconfiguration
-- **Rationale** — why it matters for security
-- **Remediation** — exact commands to fix it
-- **Compliance mapping** — which standards it violates (PCI DSS, HIPAA, etc.)
+> A default Ubuntu install fails ~half the CIS checks — hardening is essential.
 
 ---
 
-## Step 28 — Configuration Assessment: Events Tab
+### Step 28 · Configuration Assessment — Events Timeline
 
-![Configuration Assessment — Events](./images/28.png)
+![Step 28](./images/28.png)
 
-### What's Happening Here
+The **SCA Events** tab shows when scans ran — events clustered around `11:22 AM`. Filtered by `rule.groups: sca` and `agent.id: 002`.
 
-We're in the **Configuration Assessment → Events** tab for `test-server2`. This shows the **raw SCA events** as a timeline.
-
-### What We See
-
-| Element | Description |
-|---|---|
-| **Filter** | `manager.name: ip-172-31-17-228` and `rule.groups: sca` and `agent.id: 002` |
-| **Columns** | Timestamp, SCA event details |
-| **Timeline** | Events plotted over time showing when SCA scans ran |
-| **Timestamps** | Events clustered around `Feb 20, 2026 @ 11:22` |
-
-### How SCA Events Work
-
-Every time the SCA module runs a scan (by default every 12 hours), it generates events for each check:
-- Check passed → event logged
-- Check failed → event logged with alert
-- Check status changed (was passing, now failing) → higher priority alert
-
-> These events feed into the SCA Dashboard (Step 27) to calculate the pass/fail/not-applicable counts.
+SCA scans run every 12 hours by default. Status changes (pass → fail) generate higher-priority alerts.
 
 ---
 
 ---
 
-# 📋 Lab Summary
+# 📋 Summary
 
-## What We Did (Complete Flow)
+## Complete Step Map
 
-### Phase 1: Infrastructure Setup (AWS)
-
-| Step | Screenshot | What We Did |
-|---|---|---|
-| 1 | `1.png` | SSH into Ubuntu EC2 instance |
-| 2 | `2.png` | Ran Wazuh quickstart installation script |
-| 3 | `3.png` | Accessed Dashboard — no agents yet |
-| 4 | `4.png` | Explored Dashboard modules (sidebar) |
-
-### Phase 2: Initial Dashboard Exploration
-
-| Step | Screenshot | What We Did |
-|---|---|---|
-| 5 | `5.png` | Explored Discover tab — `wazuh-alerts-*` index patterns, 404 hits |
-| 6 | `6.png` | Threat Hunting — 78 authentication failure events |
-
-### Phase 3: Agent Deployment
-
-| Step | Screenshot | What We Did |
-|---|---|---|
-| 7 | `7.png` | Deploy Agent wizard — selected Linux DEB amd64, server `34.224.212.65` |
-| 8 | `8.png` | Confirmed package selection, updated server IP to `98.81.179.28` |
-| 9 | `9.png` | Got the install command with `WAZUH_MANAGER='98.81.179.28'` |
-| 10 | `10.png` | Configured AWS Security Group `sg-0409dfe0b07ea77dd` (6 inbound rules) |
-| 11 | `11.png` | Verified 2 EC2 instances running (`wazuh` = t2.medium, 2/2 checks passed) |
-| 12 | `12.png` | First agent enrolled — `001 ip-172-31-27-237` active |
-| 13 | `13.png` | Viewed individual agent details (2 cores, 3.868 GB RAM, Intel Xeon) |
-
-### Phase 4: Second Agent Deployment
-
-| Step | Screenshot | What We Did |
-|---|---|---|
-| 14 | `14.png` | AWS EC2 console — managing instances (full sidebar visible) |
-| 15 | `15.png` | Second agent enrolled — `002 test-server2` (never connected) |
-| 16 | `16.png` | Verified both agents active — `172.31.27.237` and `172.31.25.172` |
-
-### Phase 5: Security Module Exploration
-
-| Step | Screenshot | What We Did |
-|---|---|---|
-| 17 | `17.png` | SCA events for test-server2 — 280 hits, CIS checks |
-| 18 | `18.png` | Overview page — 2 active agents with data |
-| 19 | `19.png` | IT Hygiene — system/platforms, Ubuntu 24.04.3 LTS, Kernel 6.14.0-1018-aws |
-| 20 | `20.png` | IT Hygiene — network (top ports: 443, 1514, 80, 34007) |
-| 21 | `21.png` | IT Hygiene — services (179 unique services, 356 total entries) |
-| 22 | `22.png` | MITRE ATT&CK — dashboard, top tactics: Valid Accounts, Defense Evasion |
-| 23 | `23.png` | MITRE ATT&CK — intelligence (150+ threat groups: admin@338, Ajax Security Team, Andariel) |
-| 24 | `24.png` | MITRE ATT&CK — raw events with timestamps |
-| 25 | `25.png` | Vulnerability Detection — 18 Critical, 344 High, 758 Medium, 134 Low, 1566 Pending |
-| 26 | `26.png` | Vulnerability events for test-server2 — 1,420 hits, libgnutls30t64 flaw |
-| 27 | `27.png` | SCA CIS Ubuntu 24.04 Benchmark — 120 pass / 117 fail / 42 N/A (50% score) |
-| 28 | `28.png` | SCA events timeline — clustered around 11:22 AM |
+| Phase | Step | Screenshot | Description |
+|:---:|:---:|:---:|:---|
+| **1** | 1 | 1.png | SSH into Ubuntu EC2 |
+| | 2 | 2.png | Run Wazuh install script |
+| | 3 | 3.png | Dashboard — no agents |
+| | 4 | 4.png | Sidebar modules overview |
+| **2** | 5 | 5.png | Discover tab — 404 hits, 3 index patterns |
+| | 6 | 6.png | Threat Hunting — 78 auth failures |
+| **3** | 7 | 7.png | Deploy Agent — select Linux DEB amd64 |
+| | 8 | 8.png | Confirm package, server IP `98.81.179.28` |
+| | 9 | 9.png | Install command generated |
+| | 10 | 10.png | Security Group — 6 inbound rules |
+| | 11 | 11.png | 2 EC2 instances running |
+| | 12 | 12.png | Agent 001 active |
+| | 13 | 13.png | Agent details — 2 cores, 3.9 GB RAM |
+| **4** | 14 | 14.png | AWS EC2 console sidebar |
+| | 15 | 15.png | Agent 002 enrolled (never connected) |
+| | 16 | 16.png | Both agents active |
+| **5** | 17 | 17.png | SCA events — 280 hits |
+| | 18 | 18.png | Overview — 2 active agents |
+| | 19 | 19.png | IT Hygiene — Ubuntu 24.04, Kernel 6.14 |
+| | 20 | 20.png | IT Hygiene — ports 443, 1514, 80 |
+| | 21 | 21.png | IT Hygiene — 179 services |
+| | 22 | 22.png | MITRE ATT&CK dashboard |
+| | 23 | 23.png | MITRE Intelligence — 150+ groups |
+| | 24 | 24.png | MITRE events |
+| | 25 | 25.png | Vuln Detection — 18 Crit, 344 High |
+| | 26 | 26.png | Vuln events — 1,420 on test-server2 |
+| | 27 | 27.png | CIS Benchmark — 120 pass / 117 fail |
+| | 28 | 28.png | SCA events timeline |
 
 ---
 
 ## Key Takeaways
 
-1. **Wazuh needs agents to show data** — an empty dashboard just means no agents are enrolled yet
-2. **AWS Security Groups are critical** — port 1514/1515 must be open for agents to connect
-3. **Agent deployment is simple** — the Dashboard wizard generates the exact install command
-4. **IT Hygiene gives full inventory** — packages, ports, services, network interfaces
-5. **MITRE ATT&CK is built-in** — alerts are automatically mapped to tactics and techniques
-6. **Vulnerability Detection found 1,000+ CVEs** — even a fresh Ubuntu server has hundreds of known vulnerabilities
-7. **CIS Benchmark score ~50%** — a default Ubuntu installation fails about half the security checks
-8. **Everything connects back to `ossec.conf`** — modules must be enabled in config to generate data
+1. **No agents = no data.** The dashboard only shows what agents report.
+2. **Ports 1514/1515 must be open** in the AWS Security Group — this is the #1 deployment issue.
+3. **Agent deployment is wizard-driven** — the Dashboard generates the exact install command.
+4. **IT Hygiene = full asset inventory** — packages, ports, services, network interfaces.
+5. **MITRE ATT&CK is built-in** — every alert maps to tactics and techniques automatically.
+6. **1,000+ CVEs on a fresh Ubuntu server** — vulnerability scanning is essential, not optional.
+7. **CIS score ~50%** — a default install needs significant hardening.
+8. **Everything starts at `ossec.conf`** — if a module isn't enabled, its dashboard stays empty.
 
 ---
 
 ## References
 
-- Wazuh Quick Start: https://documentation.wazuh.com/current/quickstart.html
-- Wazuh Agent Deployment: https://documentation.wazuh.com/current/installation-guide/wazuh-agent/index.html
-- Wazuh Dashboard: https://documentation.wazuh.com/current/getting-started/components/wazuh-dashboard.html
-- Capabilities: https://documentation.wazuh.com/current/user-manual/capabilities/index.html
-- ossec.conf Reference: https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/index.html
+| Resource | Link |
+|:---|:---|
+| Quick Start Guide | https://documentation.wazuh.com/current/quickstart.html |
+| Agent Deployment | https://documentation.wazuh.com/current/installation-guide/wazuh-agent/index.html |
+| Dashboard Docs | https://documentation.wazuh.com/current/getting-started/components/wazuh-dashboard.html |
+| Capabilities | https://documentation.wazuh.com/current/user-manual/capabilities/index.html |
+| ossec.conf Reference | https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/index.html |
