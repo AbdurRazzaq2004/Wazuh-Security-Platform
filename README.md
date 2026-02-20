@@ -209,27 +209,34 @@ The [**Lab Walkthrough**](./10-wazuh-lab-walkthrough.md) documents a complete ex
 
 <br/>
 
-| Screenshots | Module | Category |
+| Screenshots | What It Shows | Category |
 |:---|:---|:---|
-| `1` – `2` | Dashboard Overview & Security Events | Home |
-| `3` – `4` | Agents List & Individual Agent View | Management |
-| `5` – `6` | Configuration Assessment (SCA / CIS) | Endpoint Security |
-| `7` | Malware Detection | Endpoint Security |
-| `8` – `9` | File Integrity Monitoring (FIM) | Endpoint Security |
-| `10` – `11` | Threat Hunting & Alert JSON | Threat Intelligence |
-| `12` – `13` | Vulnerability Detection & CVE Details | Threat Intelligence |
-| `14` – `15` | MITRE ATT&CK Framework | Threat Intelligence |
-| `16` – `18` | IT Hygiene / System Inventory | Security Operations |
-| `19` | PCI DSS Compliance | Security Operations |
-| `20` | GDPR Compliance | Security Operations |
-| `21` | HIPAA Compliance | Security Operations |
-| `22` | NIST 800-53 Compliance | Security Operations |
-| `23` | TSC (SOC 2) Compliance | Security Operations |
-| `24` | Docker Container Security | Cloud Security |
-| `25` | AWS Cloud Security | Cloud Security |
-| `26` | Google Cloud Security | Cloud Security |
-| `27` | Office 365 / GitHub | Cloud Security |
-| `28` | Server Management & Settings | Administration |
+| `1` | SSH into Ubuntu EC2 instance | Setup |
+| `2` | Wazuh quickstart installation script | Setup |
+| `3` | Dashboard overview — no agents yet | Dashboard |
+| `4` | Dashboard modules sidebar (Endpoint Security, etc.) | Dashboard |
+| `5` | Discover tab — wazuh-alerts index patterns | Dashboard |
+| `6` | Threat Hunting — authentication failures | Threat Intelligence |
+| `7` – `8` | Deploy New Agent wizard — OS & package selection | Agent Deployment |
+| `9` | Deploy Agent — install command with server IP | Agent Deployment |
+| `10` | AWS Security Group — inbound rules (port 1514/1515) | AWS Setup |
+| `11` | AWS EC2 — 2 instances running | AWS Setup |
+| `12` | Wazuh Agents — first agent enrolled & active | Agent Management |
+| `13` | Individual agent dashboard (ip-172-31-27-237) | Agent Management |
+| `14` | AWS EC2 console — managing instances | AWS Setup |
+| `15` – `16` | Wazuh Agents — 2 agents enrolled, detailed list | Agent Management |
+| `17` | Configuration Assessment (SCA) dashboard | Endpoint Security |
+| `18` | Overview page — 2 active agents with data | Dashboard |
+| `19` | IT Hygiene — system dashboard, platforms | Security Operations |
+| `20` | IT Hygiene — network (ports 443, 1514) | Security Operations |
+| `21` | IT Hygiene — services inventory (179 services) | Security Operations |
+| `22` | MITRE ATT&CK — dashboard & tactics | Threat Intelligence |
+| `23` | MITRE ATT&CK — intelligence (groups, mitigations) | Threat Intelligence |
+| `24` | MITRE ATT&CK — events tab | Threat Intelligence |
+| `25` | Vulnerability Detection — dashboard (18 Critical, 344 High) | Threat Intelligence |
+| `26` | Vulnerability Detection — events for test-server2 | Threat Intelligence |
+| `27` | Configuration Assessment — CIS Ubuntu benchmark (120 pass / 117 fail) | Endpoint Security |
+| `28` | Configuration Assessment — events timeline | Endpoint Security |
 
 </details>
 
