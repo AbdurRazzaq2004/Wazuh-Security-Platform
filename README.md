@@ -263,11 +263,11 @@ curl -sO https://packages.wazuh.com/4.10/wazuh-install.sh
 sudo bash ./wazuh-install.sh -a
 ```
 
-```
-Dashboard URL  →  https://<your-server-ip>:443
-Username       →  admin
-Password       →  (printed after installation)
-```
+| | |
+|:---|:---|
+| **Dashboard URL** | `https://<your-server-ip>:443` |
+| **Username** | `admin` |
+| **Password** | Printed in terminal after installation |
 
 > See [**Deployment Strategy**](./07-single-node-vs-multi-node.md) for single-node vs multi-node details.
 
@@ -275,26 +275,23 @@ Password       →  (printed after installation)
 
 ## Repository Structure
 
-```
-Wazuh-Security-Platform/
-│
-├── README.md                           # This file
-├── requirement.txt                     # Prerequisites
-├── image.png                           # Architecture diagram
-├── images/                             # 28 lab screenshots (1.png – 28.png)
-│
-├── 00-wazuh-overview.md                # What is Wazuh?
-├── 01-wazuh-agent.md                   # Agent deep-dive (9 modules)
-├── 02-wazuh-server.md                  # Server components
-├── 03-wazuh-indexer.md                 # Indexer & data storage
-├── 04-wazuh-dashboard.md               # Dashboard features
-├── 05-wazuh-architecture.md            # Full architecture
-├── 06-wazuh-use-cases.md               # 10 real-world use cases
-├── 07-single-node-vs-multi-node.md     # Deployment strategies
-├── 08-wazuh-dashboard-modules.md       # All 18 dashboard modules
-├── 09-ossec-conf-explained.md          # Config file explained
-└── 10-wazuh-lab-walkthrough.md         # Lab with 28 screenshots
-```
+| File / Folder | Description |
+|:---|:---|
+| `README.md` | This file |
+| `requirement.txt` | Prerequisites |
+| `image.png` | Architecture diagram |
+| `images/` | 28 lab screenshots (`1.png` – `28.png`) |
+| `00-wazuh-overview.md` | What is Wazuh? |
+| `01-wazuh-agent.md` | Agent deep-dive (9 modules) |
+| `02-wazuh-server.md` | Server components |
+| `03-wazuh-indexer.md` | Indexer & data storage |
+| `04-wazuh-dashboard.md` | Dashboard features |
+| `05-wazuh-architecture.md` | Full architecture |
+| `06-wazuh-use-cases.md` | 10 real-world use cases |
+| `07-single-node-vs-multi-node.md` | Deployment strategies |
+| `08-wazuh-dashboard-modules.md` | All 18 dashboard modules |
+| `09-ossec-conf-explained.md` | Config file explained |
+| `10-wazuh-lab-walkthrough.md` | Lab with 28 screenshots |
 
 ---
 
