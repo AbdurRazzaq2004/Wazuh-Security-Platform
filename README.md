@@ -336,6 +336,4 @@ sudo bash ./wazuh-install.sh -a
 
 <br/>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0,533483,0f3460,16213e,1a1a2e&height=100&section=footer" width="100%"/>
-
 </div>
