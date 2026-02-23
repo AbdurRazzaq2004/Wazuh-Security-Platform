@@ -330,9 +330,9 @@ sudo bash ./wazuh-install.sh -a
 
 <div align="center">
 
-**Made with ❤️ by [Abdur Razzaq](https://github.com/AbdurRazzaq2004)**
+**Made by [Abdur Razzaq](https://github.com/AbdurRazzaq2004)**
 
-*"Security is not a product, but a process."* — Bruce Schneier
+*"Security is not a product, but a process."*  (Bruce Schneier)
 
 <br/>
 
