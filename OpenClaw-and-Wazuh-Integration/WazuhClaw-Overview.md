@@ -1,18 +1,18 @@
 # Wazuh + OpenClaw: AI-Powered Security Monitoring
 
-> **Automated threat detection, compliance monitoring, and incident response — managed through natural language via Telegram.**
+> **Automated threat detection, compliance monitoring, and incident response, managed through natural language via Telegram.**
 
 ---
 
 ## What Is This Project?
 
-This project combines **Wazuh** (an open-source security platform) with **OpenClaw** (an AI assistant framework) to create a fully automated security monitoring system that anyone can interact with using plain English — no dashboards, no complex queries, no security expertise required.
+This project combines **Wazuh** (an open-source security platform) with **OpenClaw** (an AI assistant framework) to create a fully automated security monitoring system that anyone can interact with using plain English, no dashboards, no complex queries, no security expertise required.
 
 Instead of staring at dashboards or writing search queries, you simply message a Telegram bot:
 
 > *"Are there any security threats on our servers?"*
 
-And get back a detailed, human-readable answer — sourced directly from real-time security data.
+And get back a detailed, human-readable answer, sourced directly from real-time security data.
 
 ---
 
@@ -20,7 +20,7 @@ And get back a detailed, human-readable answer — sourced directly from real-ti
 
 | Challenge | How This Project Addresses It |
 |-----------|-------------------------------|
-| Security tools generate thousands of alerts — most are noise | AI filters and prioritizes, Slack fires **only when real issues are found** |
+| Security tools generate thousands of alerts, most are noise | AI filters and prioritizes, Slack fires **only when real issues are found** |
 | Dashboards require expertise to interpret | Telegram bot explains findings in plain language |
 | Compliance audits are manual, slow, and expensive | Automated checks against PCI DSS, HIPAA, NIST 800-53, SOC 2, ISO 27001, CMMC |
 | Brute-force attacks go unnoticed until it's too late | Real-time detection + automatic IP blocking (active response) |
@@ -55,7 +55,7 @@ And get back a detailed, human-readable answer — sourced directly from real-ti
 
 **In simple terms:**
 
-1. **Wazuh Agents** sit on your servers and watch everything — logins, file changes, processes, network connections, vulnerabilities, compliance posture.
+1. **Wazuh Agents** sit on your servers and watch everything, logins, file changes, processes, network connections, vulnerabilities, compliance posture.
 2. **Wazuh Manager** collects all that data, correlates events into meaningful alerts, and auto-blocks attackers.
 3. **OpenClaw** connects to Wazuh's API and alert database, understands security data through AI, and translates it into actionable insights.
 4. **You** ask questions via Telegram or check Slack for automated notifications.
@@ -65,14 +65,14 @@ And get back a detailed, human-readable answer — sourced directly from real-ti
 ## What It Monitors
 
 ### Endpoint Security
-- **Security Configuration Assessment (SCA)** — Checks servers against CIS benchmarks (e.g., CIS Ubuntu 24.04). Identifies misconfigurations like weak SSH settings, missing firewall rules, or improper file permissions.
-- **Rootkit & Malware Detection** — Scans for hidden processes, suspicious files, trojans, and known rootkit signatures.
-- **File Integrity Monitoring (FIM)** — Watches critical system files (`/etc`, `/bin`, `/usr/bin`, SSH keys, cron jobs) in real-time. Any unauthorized change triggers an alert.
+- **Security Configuration Assessment (SCA)** Checks servers against CIS benchmarks (e.g., CIS Ubuntu 24.04). Identifies misconfigurations like weak SSH settings, missing firewall rules, or improper file permissions.
+- **Rootkit & Malware Detection** Scans for hidden processes, suspicious files, trojans, and known rootkit signatures.
+- **File Integrity Monitoring (FIM)** Watches critical system files (`/etc`, `/bin`, `/usr/bin`, SSH keys, cron jobs) in real-time. Any unauthorized change triggers an alert.
 
 ### Threat Intelligence
-- **Threat Hunting** — Tracks SSH brute-force attacks, failed authentication attempts, suspicious source IPs, and unusual login patterns.
-- **Vulnerability Detection** — Identifies known CVEs on monitored servers by cross-referencing installed packages.
-- **MITRE ATT&CK Mapping** — Maps detected threats to the MITRE ATT&CK framework (tactics, techniques) for structured threat analysis.
+- **Threat Hunting** Tracks SSH brute-force attacks, failed authentication attempts, suspicious source IPs, and unusual login patterns.
+- **Vulnerability Detection** Identifies known CVEs on monitored servers by cross-referencing installed packages.
+- **MITRE ATT&CK Mapping** Maps detected threats to the MITRE ATT&CK framework (tactics, techniques) for structured threat analysis.
 
 ### Compliance Monitoring
 Automated checks against **7 major frameworks**:
@@ -96,7 +96,7 @@ Automated checks against **7 major frameworks**:
 
 | Criteria | Wazuh | Alternatives |
 |----------|-------|-------------|
-| **Cost** | Free & open-source | Splunk, CrowdStrike, SentinelOne — $10K-$100K+/year |
+| **Cost** | Free & open-source | Splunk, CrowdStrike, SentinelOne, $10K-$100K+/year |
 | **Capabilities** | SIEM + XDR + compliance in one platform | Often need 3-4 separate tools |
 | **Agent support** | Linux, Windows, macOS, containers | Varies |
 | **Compliance** | Built-in PCI DSS, HIPAA, NIST, SOC2, GDPR, ISO 27001 | Often add-on modules |
@@ -112,11 +112,11 @@ Automated checks against **7 major frameworks**:
 
 OpenClaw turns Wazuh from a "tool for security engineers" into a "tool for everyone."
 
-- **Natural language interface** — Ask security questions in plain English via Telegram
-- **AI-powered analysis** — LLM interprets raw security data and explains findings in context
-- **Skill-based architecture** — Custom skills teach the AI exactly how to query Wazuh APIs and interpret results
-- **Script execution** — AI can run health checks, audits, and reports directly on the server
-- **Multi-channel** — Telegram bot, Slack notifications, and web-based Control UI
+- **Natural language interface** Ask security questions in plain English via Telegram
+- **AI-powered analysis** LLM interprets raw security data and explains findings in context
+- **Skill-based architecture** Custom skills teach the AI exactly how to query Wazuh APIs and interpret results
+- **Script execution** AI can run health checks, audits, and reports directly on the server
+- **Multi-channel** Telegram bot, Slack notifications, and web-based Control UI
 
 Without OpenClaw, you'd need a trained security analyst watching dashboards. With OpenClaw, anyone on the team can ask *"Are we secure?"* and get a real answer.
 
@@ -137,19 +137,19 @@ Without OpenClaw, you'd need a trained security analyst watching dashboards. Wit
 ## Key Benefits
 
 ### 1. Zero Alert Fatigue
-The system uses **alert-only mode** — Slack notifications fire only when actual security issues are detected. No more "all clear" spam every 15 minutes.
+The system uses **alert-only mode** Slack notifications fire only when actual security issues are detected. No more "all clear" spam every 15 minutes.
 
 ### 2. Enterprise Compliance Without Enterprise Cost
 Automated compliance checks against 7 frameworks, with specific control-level mapping (e.g., PCI DSS Requirement 2.2, HIPAA §164.312(a)(1)). A compliance audit that would take days is reduced to a single Telegram message.
 
 ### 3. Proactive Defense
-Active response automatically blocks brute-force attackers. FIM detects unauthorized file changes in real-time. You don't wait for a breach — the system acts immediately.
+Active response automatically blocks brute-force attackers. FIM detects unauthorized file changes in real-time. You don't wait for a breach, the system acts immediately.
 
 ### 4. Accessible Security
 No need to learn OpenSearch query syntax, Wazuh API endpoints, or security frameworks. Just ask the Telegram bot in natural language. The AI handles the complexity.
 
 ### 5. Full Visibility
-10-section deep audit covers: system health, alert analysis, file integrity, malware, vulnerabilities, threat hunting, SCA compliance, regulatory compliance, IT hygiene, and active response — all in one report.
+10-section deep audit covers: system health, alert analysis, file integrity, malware, vulnerabilities, threat hunting, SCA compliance, regulatory compliance, IT hygiene, and active response, all in one report.
 
 ### 6. Cost Effective
 The entire stack runs on a single EC2 instance. All components are open-source or free-tier. No per-agent licensing, no per-GB ingestion fees.
@@ -195,7 +195,7 @@ The entire stack runs on a single EC2 instance. All components are open-source o
 
 > **You:** "Run a full security audit."
 >
-> **Bot:** *(runs wazuh-deep-audit.sh and analyzes the output — returns a structured 10-section report covering health, alerts, FIM, malware, vulnerabilities, threat hunting, SCA, compliance, IT hygiene, and active response)*
+> **Bot:** *(runs wazuh-deep-audit.sh and analyzes the output, returns a structured 10-section report covering health, alerts, FIM, malware, vulnerabilities, threat hunting, SCA, compliance, IT hygiene, and active response)*
 
 > **You:** "Are we HIPAA compliant?"
 >
@@ -203,7 +203,7 @@ The entire stack runs on a single EC2 instance. All components are open-source o
 
 **Via Slack (automatic):**
 
-> 🚨 **Security Alert** — 3 issues detected
+> 🚨 **Security Alert** 3 issues detected
 > - High-severity alerts (level 12+): 2 events
 > - SSH brute force from 223.x.x.x: 47 attempts in 15 min
 > - FIM change detected: /etc/passwd modified
@@ -217,7 +217,7 @@ The entire stack runs on a single EC2 instance. All components are open-source o
 | **Small/medium teams** | Enterprise-grade security without hiring a SOC team |
 | **DevOps engineers** | Integrate security monitoring into existing workflows |
 | **Compliance officers** | Automated evidence collection for audits |
-| **Startups** | Ship with security from day one — at zero cost |
+| **Startups** | Ship with security from day one, at zero cost |
 | **Students & learners** | Hands-on SIEM/XDR experience with AI integration |
 | **MSPs / consultants** | Offer security monitoring as a managed service |
 
@@ -225,11 +225,11 @@ The entire stack runs on a single EC2 instance. All components are open-source o
 
 ## Limitations & Considerations
 
-- **Single-node deployment** — Suitable for small to medium environments. For large-scale, Wazuh supports multi-node clusters.
-- **AI accuracy** — LLM responses are based on the data available. Complex edge cases may need human review.
-- **Default credentials** — Must be changed before production use.
-- **Agent coverage** — Only monitors servers with Wazuh agents installed. Agentless monitoring is limited.
-- **Internet dependency** — OpenClaw requires internet access for LLM API calls (unless using a local model).
+- **Single-node deployment** Suitable for small to medium environments. For large-scale, Wazuh supports multi-node clusters.
+- **AI accuracy** LLM responses are based on the data available. Complex edge cases may need human review.
+- **Default credentials** Must be changed before production use.
+- **Agent coverage** Only monitors servers with Wazuh agents installed. Agentless monitoring is limited.
+- **Internet dependency** OpenClaw requires internet access for LLM API calls (unless using a local model).
 
 ---
 
@@ -237,11 +237,11 @@ The entire stack runs on a single EC2 instance. All components are open-source o
 
 This project delivers a **complete, AI-powered security operations center** using entirely open-source tools:
 
-- **Wazuh** handles the heavy lifting — agent-based monitoring, alert correlation, compliance checking, and active response.
-- **OpenClaw** makes it accessible — turning complex security data into conversational insights via Telegram.
-- **Automation** keeps it running — cron jobs, alert-only notifications, and real-time integrations ensure nothing is missed.
+- **Wazuh** handles the heavy lifting, agent-based monitoring, alert correlation, compliance checking, and active response.
+- **OpenClaw** makes it accessible, turning complex security data into conversational insights via Telegram.
+- **Automation** keeps it running, cron jobs, alert-only notifications, and real-time integrations ensure nothing is missed.
 
-The result: **24/7 security monitoring, automated compliance, proactive threat response — all manageable from a chat window.**
+The result: **24/7 security monitoring, automated compliance, proactive threat response, all manageable from a chat window.**
 
 ---
 
